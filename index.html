@@ -10,12 +10,22 @@
       body {
         overflow: hidden;
         margin: 0;
+        position: relative;
       }
-
+      .colorpick{
+        display: flex;
+        align-items: flex-start;
+        gap :10px;
+        flex-direction: column;
+        position: absolute;
+        width: 100%;
+      }
       .colorClass {
         width: 100px;
         height: 30px;
         margin: 10px;
+        z-index: 999;
+        position: relative;
       }
       .first{
         background-color: #f0f0f0;
@@ -32,9 +42,11 @@
   <body>
     <input type="file" id="loadStl" accept=".stl" /><br />
     <input id="resultField" /><br /><br />
-    <div class="colorClass first" onclick='changeMaterial("#f0f0f0")' ></div>
-    <div class="colorClass sec" onclick='changeMaterial("#a14aa1")' ></div>
-    <div class="colorClass sec" onclick='changeMaterial("#1e2ce2")' ></div>
+    <div class="colorpick">
+      <div class="colorClass first" onclick='changeMaterial("#f0f0f0")' ></div>
+      <div class="colorClass sec" onclick='changeMaterial("#a14aa1")' ></div>
+      <div class="colorClass third" onclick='changeMaterial("#1e2ce2")' ></div>
+    </div>
     <script>
 
       var newColor = '0xf0f0f';
