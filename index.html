@@ -1,22 +1,44 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>05.01 - Using shadows with a spot light</title>
+    <title>STL</title>
     <script src="https://threejs.org/build/three.min.js"></script>
     <script src="https://threejs.org/examples/js/loaders/STLLoader.js"></script>
     <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <style>
       body {
         overflow: hidden;
         margin: 0;
       }
+
+      .colorClass {
+        width: 100px;
+        height: 30px;
+        margin: 10px;
+      }
+      .first{
+        background-color: #f0f0f0;
+      }
+      .sec{
+        background-color: #a14aa1;
+      }
+      .third{
+        background-color: #1e2ce2;
+
+      }
     </style>
   </head>
   <body>
-    <input type="file" id="loadStl" accept=".stl"/>
-    <br>
-    <input id="resultField"></div>
+    <input type="file" id="loadStl" accept=".stl" /><br />
+    <input id="resultField" /><br /><br />
+    <div class="colorClass first" onclick='changeMaterial("#f0f0f0")' ></div>
+    <div class="colorClass sec" onclick='changeMaterial("#a14aa1")' ></div>
+    <div class="colorClass sec" onclick='changeMaterial("#1e2ce2")' ></div>
     <script>
+
+      var newColor = '0xf0f0f';
+      var mesh;
       var scene = new THREE.Scene();
       var camera = new THREE.PerspectiveCamera(
         60,
@@ -26,9 +48,21 @@
       );
       camera.position.setScalar(100);
       var renderer = new THREE.WebGLRenderer();
-      renderer.setClearColor(0xffffff);
+      renderer.setClearColor(0x777777);
       renderer.setSize(window.innerWidth, window.innerHeight);
       document.body.appendChild(renderer.domElement);
+      const light = new THREE.AmbientLight( 0x404040 ); // soft white light
+      scene.add( light );
+
+      const NewSpotlight = new THREE.SpotLight(0x0dfe6e9, .2);
+      NewSpotlight.castShadow = true;
+      NewSpotlight.position.set(-50, -100, 50);
+      scene.add(NewSpotlight);
+
+      spotlight = new THREE.SpotLight(0x0dfe6e9, .3);
+      spotlight.castShadow = true;
+      spotlight.position.set(100, 100, 20);
+      scene.add(spotlight);
 
       var controls = new THREE.OrbitControls(camera, renderer.domElement);
 
@@ -38,16 +72,26 @@
         reader.addEventListener("load", () => {
           var loader = new THREE.STLLoader();
           loader.load(reader.result, function (geometry) {
-            var mesh = new THREE.Mesh(
+             mesh = new THREE.Mesh(
               geometry,
-              new THREE.MeshBasicMaterial({
-                color: 0xfff,
+              new THREE.MeshPhongMaterial({
+                shininess: 100,
+                // map: new THREE.TextureLoader().load('https://threejs.org/examples/textures/water/Water_2_M_Normal.jpg'),
+                // bumpMap: new THREE.TextureLoader().load('https://threejs.org/examples/textures/water.jpg'),
+                wireframe: false,
+                specular: 0x636e72, 
+                flatShading: false,
+                color: 0xf0f0f0
               })
+              // new THREE.MeshBasicMaterial({
+              //   color: 0xfdf0f0
+              // })
             );
-            mesh.rotation.set(-Math.PI / 2, 0, 0);
+            // mesh.material.rotation.set(-Math.PI / 2, 0, 0);
             mesh.scale.setScalar(1);
             scene.add(mesh);
-            document.querySelector("#resultField").value = "stl volume is " + getVolume(geometry);
+            document.querySelector("#resultField").value =
+              "stl volume is " + getVolume(geometry);
           });
         });
         reader.readAsDataURL(this.files[0]);
@@ -72,6 +116,25 @@
         "computed volume of a hollow cylinder: " + getVolume(hollowCylinderGeom)
       );
 
+      function changeMaterial(color){
+        var rgbcolor = hexToRgbA(color);
+        mesh.material.color.set(rgbcolor);
+        // console.log('aaaaaa',mesh.material.color)
+      }
+
+      const hexToRgbA = (hex) =>{
+        var c;
+        if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
+            c= hex.substring(1).split('');
+            if(c.length== 3){
+                c= [c[0], c[0], c[1], c[1], c[2], c[2]];
+            }
+            c= '0x'+c.join('');
+            return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+',1)';
+        }
+        throw new Error('Bad Hex');
+      }
+
       function getVolume(geometry) {
         let position = geometry.attributes.position;
         let faces = position.count / 3;
@@ -86,6 +149,23 @@
           sum += signedVolumeOfTriangle(p1, p2, p3);
         }
         return sum;
+      }
+
+      function getRandomColor() {
+        var letters = "0123456789ABCDEF";
+        var color = "#";
+        for (var i = 0; i < 6; i++) {
+          color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+      }
+
+      function setRandomColor() {
+        var color = getRandomColor();
+        $("#colorpad1").css("background-color", color);
+        document.querySelector("#colorValue1").value =
+          "Random color : " + color;
+        newColor = color;
       }
 
       function signedVolumeOfTriangle(p1, p2, p3) {
