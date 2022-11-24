@@ -117,6 +117,7 @@
       //   textureWidth: window.innerWidth * window.devicePixelRatio,
       //   textureHeight: window.innerHeight * window.devicePixelRatio,
       //   color: 0xaaaaaa,
+      //   alpha :0.2
       // } );
   
       // groundMirror.rotateX( - Math.PI / 2 );
@@ -130,6 +131,40 @@
         reader.addEventListener("load", () => {
           var loader = new THREE.STLLoader();
           loader.load(reader.result, function (geometry) {
+
+
+            geometry.computeBoundingBox();
+            // var vector = mesh.geometry.boundingBox;
+
+            var boundingBox = geometry.boundingBox;
+            if (geometry.type=='Group' && geometry.children.length>1) {
+              var min_coords=[];
+              var max_coords=[];
+              for(var i=0;i<geometry.children.length;i++) {
+                geometry.children[i].geometry.computeBoundingBox();
+                if (i==0) {
+                  min_coords.x=geometry.children[i].geometry.boundingBox.min.x;
+                  min_coords.y=geometry.children[i].geometry.boundingBox.min.y;
+                  min_coords.z=geometry.children[i].geometry.boundingBox.min.z;
+                  max_coords.x=geometry.children[i].geometry.boundingBox.max.x;
+                  max_coords.y=geometry.children[i].geometry.boundingBox.max.y;
+                  max_coords.z=geometry.children[i].geometry.boundingBox.max.z;
+                }
+                else {
+                  if (geometry.children[i].geometry.boundingBox.min.x < min_coords.x) min_coords.x = geometry.children[i].geometry.boundingBox.min.x;
+                  if (geometry.children[i].geometry.boundingBox.min.y < min_coords.y) min_coords.y = geometry.children[i].geometry.boundingBox.min.y;
+                  if (geometry.children[i].geometry.boundingBox.min.z < min_coords.z) min_coords.z = geometry.children[i].geometry.boundingBox.min.z;
+
+                  if (geometry.children[i].geometry.boundingBox.max.x > max_coords.x) max_coords.x = geometry.children[i].geometry.boundingBox.max.x;
+                  if (geometry.children[i].geometry.boundingBox.max.y > max_coords.y) max_coords.y = geometry.children[i].geometry.boundingBox.max.y;
+                  if (geometry.children[i].geometry.boundingBox.max.z > max_coords.z) max_coords.z = object.children[i].geometry.boundingBox.max.z;
+                }
+              }
+              boundingBox.min=min_coords;
+              boundingBox.max=max_coords;
+            }
+            console.log(boundingBox)
+
             mesh = new THREE.Mesh(
               geometry,
              new THREE.MeshPhysicalMaterial({
@@ -143,13 +178,14 @@
               shininess: 100,
               flatShading: false})
             );
-
+            mesh.position.set(0,(0-boundingBox.min.y)/100,0)
             mesh.rotation.set(-Math.PI / 2, 0, 0);
             mesh.scale.setScalar(0.1);
             mesh.castShadow = true;
             mesh.receiveShadow = true;
             scene.add(mesh);
             volume = getVolume(geometry) ;
+
             document.querySelector("#resultField").value =
               "stl volume is " + getVolume(geometry);
           });
