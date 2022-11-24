@@ -130,12 +130,6 @@
         reader.addEventListener("load", () => {
           var loader = new THREE.STLLoader();
           loader.load(reader.result, function (geometry) {
-            const mergedGeometry = new THREE.BufferGeometryUtils.mergeVertices(geometry, 0.01);
-            mergedGeometry.computeVertexNormals();
-            geometry = mergedGeometry;
-            geometry.computeVertexNormals();
-
-            // var geo = new THREE.BufferGeometryUtils.mergeVertices(geometry);
             mesh = new THREE.Mesh(
               geometry,
              new THREE.MeshPhysicalMaterial({
