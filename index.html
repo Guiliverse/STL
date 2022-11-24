@@ -47,7 +47,6 @@
     <div class="colorpick">
       wax <div class="colorClass first" onclick='changeMaterial("wax")' ></div>
       X-one resin <div class="colorClass sec" onclick='changeMaterial("X-one resin")' ></div>
-      <div class="colorClass third" onclick='changeMaterial("#1e2ce2")' ></div>
     </div>
     <script>
       var volume, quote;
@@ -115,16 +114,17 @@
             // geo.computeVertexNormals();
             mesh = new THREE.Mesh(
               geometry,
-              new THREE.MeshPhongMaterial({
-                shininess: 100,
-                // map: new THREE.TextureLoader().load('https://threejs.org/examples/textures/water/Water_2_M_Normal.jpg'),
-                // bumpMap: new THREE.TextureLoader().load('https://threejs.org/examples/textures/water.jpg'),
-                wireframe: false,
-                specular: 0x636e72, 
-                flatShading: true,
-                color: 0xf0f0f0
-              })
+             new THREE.MeshPhysicalMaterial({
+              color: 0xd4af37,
+              emissive: 0x222222,
+              metalness: 1, 
+              wireframe: false,
+              roughness: 0.5,
+              reflectivity:0.5,
+              flatShading: false})
             );
+            // mesh.geometry.mergeVertices()
+            mesh.geometry = new THREE.BufferGeometryUtils.mergeVertices(mesh.geometry)
             mesh.rotation.set(-Math.PI / 2, 0, 0);
             mesh.scale.setScalar(0.1);
             mesh.castShadow = true;
