@@ -14,18 +14,30 @@
         margin: 0;
         position: relative;
       }
+
+      .container {
+        float: left;
+        width: 25%;
+      }
+
+      #container {
+        width: 50%;
+      }
+
       .colorpick{
         display: flex;
         align-items: flex-start;
-        gap :10px;
+        
         flex-direction: column;
-        position: absolute;
-        width: 100%;
+        
       }
       .colorClass {
-        width: 100px;
+        width: 30px;
         height: 30px;
         margin: 10px;
+        border-radius: 100%;
+        border: 1px solid black;
+        padding: 4px;
         z-index: 999;
         position: relative;
       }
@@ -39,15 +51,81 @@
         background-color: #1e2ce2;
 
       }
+      .uploadBut{
+        margin: 16px;
+        padding: 15px 24px 15px 17px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px dashed #c0c3ca;
+        background: rgb(248, 248, 248);
+        /* visibility: hidden; */
+      }
+
+      .volumn {
+        margin: 16px;
+        background-color: rgb(0, 121, 207);
+        display: flex;
+        align-items: center;
+      }
+
+      #resultField {
+        background-color: transparent;
+        border: transparent;
+        margin-left: 8px;
+      }
+
+      .uploadBut #loadStl {
+        display: none;
+      }
+
+      .uploadFileCtl {
+        color: rgb(0, 121, 207);
+        border: 1px solid rgb(0, 121, 207);
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .stlCan{
+        width: 600px;
+        height: 600px;
+        margin-top: 16px;
+      }
+
+      .price {
+        color: rgb(82, 190, 127);
+        
+      }
+
+      .color, .price {
+        padding: 16px;
+      }
+
     </style>
   </head>
   <body>
-    <input type="file" id="loadStl" accept=".stl" /><br />
-    <input id="resultField" /><br /><br />
-    Instant Quote : <input id="volume" /><br /><br />
-    <div class="colorpick">
-      wax <div class="colorClass first" onclick='changeMaterial("wax")' ></div>
-      X-one resin <div class="colorClass sec" onclick='changeMaterial("X-one resin")' ></div>
+    <div class = 'container'>
+      <div class="uploadBut">
+        <input type="file" id="loadStl"  accept=".stl" /><br />
+        <div class="desc">
+          Drop files here to upload
+        </div>
+        <div class="uploadFileCtl">Upload File</div>
+      </div>
+      <div class="volumn">
+        <input id="resultField" /><br /><br />
+      </div>
+
+    </div>
+    <div id="container" class='container stlCan'> </div>
+    <div class="container colorpick">
+      
+      <div class="price">Instant Quote : £ <span id="quote"></span></div>
+
+      <div class="color">
+        wax <div class="colorClass first" onclick='changeMaterial("wax")' ></div>
+        X-one resin <div class="colorClass sec" onclick='changeMaterial("X-one resin")' ></div>
+      </div>
     </div>
     <script>
       var volume, quote;
@@ -64,7 +142,10 @@
       var renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setClearColor(0xeeeeee);
       renderer.setSize(window.innerWidth, window.innerHeight);
-      document.body.appendChild(renderer.domElement);
+      var container = document.getElementById('container');
+      console.log($(container).width())
+      renderer.setSize($(container).width(), $(container).height());
+      container.appendChild(renderer.domElement);
       const light = new THREE.AmbientLight( 0x404040 ); // soft white light
       scene.add( light );
 
@@ -123,6 +204,10 @@
       // groundMirror.rotateX( - Math.PI / 2 );
       // scene.add( groundMirror );
 
+      $('.uploadFileCtl').on('click', function() {
+        $('#loadStl').trigger('click');
+      })
+
       var controls = new THREE.OrbitControls(camera, renderer.domElement);
 
       const loadStl = document.querySelector("#loadStl");
@@ -131,11 +216,8 @@
         reader.addEventListener("load", () => {
           var loader = new THREE.STLLoader();
           loader.load(reader.result, function (geometry) {
-
-
             geometry.computeBoundingBox();
             // var vector = mesh.geometry.boundingBox;
-
             var boundingBox = geometry.boundingBox;
             if (geometry.type=='Group' && geometry.children.length>1) {
               var min_coords=[];
@@ -185,7 +267,6 @@
             mesh.receiveShadow = true;
             scene.add(mesh);
             volume = getVolume(geometry) ;
-
             document.querySelector("#resultField").value =
               "stl volume is " + getVolume(geometry);
           });
@@ -225,7 +306,8 @@
         }
         var rgbcolor = hexToRgbA(color);
         mesh.material.color.set(rgbcolor);
-        document.querySelector("#volume").value = quote;
+        //document.querySelector("#volume").value = quote;
+        document.getElementById("quote").innerHTML = quote
         // console.log('aaaaaa',mesh.material.color)
       }
 
