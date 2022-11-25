@@ -88,7 +88,7 @@
       }
       .stlCan{
         width: 600px;
-        height: 600px;
+        height: 800px;
         margin-top: 16px;
       }
 
@@ -100,11 +100,22 @@
       .color, .price {
         padding: 16px;
       }
+      .modelList{
+        padding: 8px 16px;
+        
+        margin: 16px;
+        background-color: rgb(173, 197, 214);
+        display: flex;
+        align-items: center;
 
+        width: 80%;
+        height: 30px;
+        border: 1px solid rgb(0, 121, 207);
+      }
     </style>
   </head>
   <body>
-    <div class = 'container'>
+    <div class = 'container' id = 'leftPanel'>
       <div class="uploadBut">
         <input type="file" id="loadStl"  accept=".stl" /><br />
         <div class="desc">
@@ -128,6 +139,8 @@
       </div>
     </div>
     <script>
+      var meshArr = [];
+      var order = 0;
       var volume, quote;
       var newColor = '0xf0f0f';
       var mesh;
@@ -135,7 +148,7 @@
       var camera = new THREE.PerspectiveCamera(
         75,
         1,
-        0.01,
+        1,
         1000
       );
       camera.position.setScalar(10);
@@ -265,10 +278,17 @@
             mesh.scale.setScalar(0.1);
             mesh.castShadow = true;
             mesh.receiveShadow = true;
+            meshArr.push(mesh);
             scene.add(mesh);
             volume = getVolume(geometry) ;
+           
             document.querySelector("#resultField").value =
               "stl volume is " + getVolume(geometry);
+            ++order;
+            var fileName = document.getElementById("loadStl").value; 
+            fileName = fileName.replace(/^.*[\\\/]/, '');
+            var newDiv = $('<div class="modelList" onclick = "listCicked('+order+ ')"><h4><a>'+ fileName +'</a></h4> </div>');
+            $('#leftPanel').append(newDiv);
           });
         });
         reader.readAsDataURL(this.files[0]);
@@ -292,7 +312,12 @@
       console.log(
         "computed volume of a hollow cylinder: " + getVolume(hollowCylinderGeom)
       );
-
+      function listCicked(order){
+        meshArr.forEach(mesh => {
+          scene.remove(mesh);
+        });
+          scene.add(meshArr[order-1])
+      }
       function changeMaterial(material){
         switch (material) {
           case "wax":
