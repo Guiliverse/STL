@@ -177,45 +177,11 @@
       sun.position.set(0, 1, 0)
       scene.add(sun)
 
-      // const loader = new THREE.TextureLoader();
-      // const planeSize = 40;
-      // const texture = loader.load('https://r105.threejsfundamentals.org/threejs/resources/images/checker.png');
-      // texture.wrapS = THREE.RepeatWrapping;
-      // texture.wrapT = THREE.RepeatWrapping;
-      // texture.magFilter = THREE.NearestFilter;
-      // const repeats = planeSize / 2;
-      // texture.repeat.set(repeats, repeats);
-
-      // const planeGeo = new THREE.PlaneBufferGeometry(planeSize, planeSize);
-      // const planeMat = new THREE.MeshBasicMaterial({
-      //   map: texture,
-      //   side: THREE.DoubleSide,
-      // });
-      // planeMat.color.setRGB(1, 1, 1);
-      // const planeMesh = new THREE.Mesh(planeGeo, planeMat);
-      // planeMesh.rotation.x = Math.PI * -.5;
-      // // planeMesh.position.z -= 20
-      // scene.add(planeMesh);
-      
       scene.add(new THREE.HemisphereLight(0xffffff, 1.5));
       const size = 100;
       const divisions = 100;
       const gridHelper = new THREE.GridHelper( size, divisions );
       scene.add( gridHelper );
-
-      // let geo, material;
-
-      // geo = new THREE.PlaneBufferGeometry( 100, 100 );
-      // groundMirror = new THREE.Reflector( geo, {
-      //   clipBias: 0.001,
-      //   textureWidth: window.innerWidth * window.devicePixelRatio,
-      //   textureHeight: window.innerHeight * window.devicePixelRatio,
-      //   color: 0xaaaaaa,
-      //   alpha :0.2
-      // } );
-  
-      // groundMirror.rotateX( - Math.PI / 2 );
-      // scene.add( groundMirror );
 
       $('.uploadFileCtl').on('click', function() {
         $('#loadStl').trigger('click');
@@ -278,8 +244,11 @@
             mesh.scale.setScalar(0.1);
             mesh.castShadow = true;
             mesh.receiveShadow = true;
-            meshArr.push(mesh);
+            meshArr.forEach(mesh => {
+              scene.remove(mesh);
+            });
             scene.add(mesh);
+            meshArr.push(mesh);
             volume = getVolume(geometry) ;
            
             document.querySelector("#resultField").value =
@@ -294,24 +263,6 @@
         reader.readAsDataURL(this.files[0]);
       });
 
-      // check with known volume:
-      var hollowCylinderGeom = new THREE.LatheBufferGeometry(
-        [
-          new THREE.Vector2(1, 0),
-          new THREE.Vector2(2, 0),
-          new THREE.Vector2(2, 2),
-          new THREE.Vector2(1, 2),
-          new THREE.Vector2(1, 0),
-        ],
-        90
-      ).toNonIndexed();
-      console.log(
-        "pre-computed volume of a hollow cylinder (PI * (R^2 - r^2) * h): " +
-          Math.PI * (Math.pow(2, 2) - Math.pow(1, 2)) * 2
-      );
-      console.log(
-        "computed volume of a hollow cylinder: " + getVolume(hollowCylinderGeom)
-      );
       function listCicked(order){
         meshArr.forEach(mesh => {
           scene.remove(mesh);
@@ -330,10 +281,12 @@
           break;
         }
         var rgbcolor = hexToRgbA(color);
-        mesh.material.color.set(rgbcolor);
-        //document.querySelector("#volume").value = quote;
+        scene.traverse(function (child) {
+          if (child.isMesh) {
+            child.material.color.set(rgbcolor);    
+          }
+        })
         document.getElementById("quote").innerHTML = quote
-        // console.log('aaaaaa',mesh.material.color)
       }
 
       const hexToRgbA = (hex) =>{
@@ -364,23 +317,6 @@
         }
         sum = Math.round(sum) / 1000
         return sum;
-      }
-
-      function getRandomColor() {
-        var letters = "0123456789ABCDEF";
-        var color = "#";
-        for (var i = 0; i < 6; i++) {
-          color += letters[Math.floor(Math.random() * 16)];
-        }
-        return color;
-      }
-
-      function setRandomColor() {
-        var color = getRandomColor();
-        $("#colorpad1").css("background-color", color);
-        document.querySelector("#colorValue1").value =
-          "Random color : " + color;
-        newColor = color;
       }
 
       function signedVolumeOfTriangle(p1, p2, p3) {
